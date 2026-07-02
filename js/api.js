@@ -13,7 +13,7 @@ const API = (() => {
 
   // URL de la Web App de Google Apps Script, termina en "/exec".
   // Ejemplo: "https://script.google.com/macros/s/AKfycb.../exec"
-  const BASE_URL = "https://script.google.com/macros/s/AKfycbx-_lkuowvLXKlYnPFuSriktCj8-8_dANbf98BCn6Z7ZnVA7Me7OJbW9hAV4lySVbxHUg/exec";
+  const BASE_URL = "https://script.google.com/macros/s/AKfycbxMRF-_fgmKVNlYmUs8-vqFcBaih8YlBiHPUlnus1Dk8XAhlwgxduNYADy1UbAWCDxOhQ/exec";
 
   /**
    * Envuelve las llamadas al backend.

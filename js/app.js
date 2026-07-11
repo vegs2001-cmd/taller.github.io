@@ -31,18 +31,57 @@ document.addEventListener("DOMContentLoaded", () => {
 function pintarObservaciones() {
   const contenedor = document.getElementById("lista-observaciones");
   contenedor.innerHTML = ELEMENTOS_OBSERVACION.map((item, i) => `
-    <div class="fila-semaforo">
-      <span class="nombre-item">${item}</span>
-      <div class="semaforo" role="radiogroup" aria-label="${item}">
-        <input type="radio" name="obs-${i}" id="obs-${i}-verde" value="verde">
-        <label for="obs-${i}-verde" class="verde" title="Recomendable"></label>
-        <input type="radio" name="obs-${i}" id="obs-${i}-amarillo" value="amarillo">
-        <label for="obs-${i}-amarillo" class="amarillo" title="Precaución"></label>
-        <input type="radio" name="obs-${i}" id="obs-${i}-rojo" value="rojo">
-        <label for="obs-${i}-rojo" class="rojo" title="Atención inmediata"></label>
+    <div class="fila-semaforo" data-indice="${i}">
+      <div class="fila-semaforo__principal">
+        <span class="nombre-item">${item}</span>
+        <div class="semaforo" role="radiogroup" aria-label="${item}">
+          <input type="radio" name="obs-${i}" id="obs-${i}-verde" value="verde">
+          <label for="obs-${i}-verde" class="verde" title="Recomendable"></label>
+          <input type="radio" name="obs-${i}" id="obs-${i}-amarillo" value="amarillo">
+          <label for="obs-${i}-amarillo" class="amarillo" title="Precaución"></label>
+          <input type="radio" name="obs-${i}" id="obs-${i}-rojo" value="rojo">
+          <label for="obs-${i}-rojo" class="rojo" title="Atención inmediata"></label>
+        </div>
+      </div>
+      <div class="fila-semaforo__evidencia" id="evidencia-${i}" hidden>
+        <label class="foto-slot-mini">
+          <input type="file" accept="image/*" capture="environment" hidden data-foto-obs="${i}">
+          <span class="texto-slot">📷 Agregar foto de evidencia (obligatoria)</span>
+        </label>
       </div>
     </div>
   `).join("");
+
+  activarEvidenciasDeSemaforo();
+}
+
+/** Muestra/oculta la casilla de foto según el color elegido, y previsualiza la foto adjuntada */
+function activarEvidenciasDeSemaforo() {
+  document.querySelectorAll("#lista-observaciones .fila-semaforo").forEach((fila) => {
+    const indice = fila.dataset.indice;
+    const evidencia = fila.querySelector(`#evidencia-${indice}`);
+
+    fila.querySelectorAll(`input[name="obs-${indice}"]`).forEach((radio) => {
+      radio.addEventListener("change", () => {
+        evidencia.hidden = !(radio.checked && (radio.value === "amarillo" || radio.value === "rojo"));
+      });
+    });
+
+    const inputFoto = fila.querySelector(`input[data-foto-obs="${indice}"]`);
+    inputFoto.addEventListener("change", () => {
+      const archivo = inputFoto.files[0];
+      if (!archivo) return;
+      const etiqueta = inputFoto.closest(".foto-slot-mini");
+      let img = etiqueta.querySelector("img.miniatura-mini");
+      if (!img) {
+        img = document.createElement("img");
+        img.className = "miniatura-mini";
+        etiqueta.prepend(img);
+      }
+      img.src = URL.createObjectURL(archivo);
+      etiqueta.querySelector(".texto-slot").textContent = "Foto adjuntada ✓ (toca para cambiarla)";
+    });
+  });
 }
 
 /** Permite tomar/adjuntar foto en cada casilla y mostrar una miniatura */
@@ -86,6 +125,7 @@ function recolectarDatosRecepcion() {
   datos.observaciones = ELEMENTOS_OBSERVACION.map((item, i) => ({
     elemento: item,
     estado: form.querySelector(`input[name="obs-${i}"]:checked`)?.value || null,
+    archivo: document.querySelector(`input[data-foto-obs="${i}"]`)?.files[0] || null,
   }));
 
   datos.fotos = Array.from(document.querySelectorAll("#grid-fotos-ingreso .foto-slot")).map((slot) => ({
@@ -98,12 +138,25 @@ function recolectarDatosRecepcion() {
 
 async function guardarRecepcion(evento) {
   evento.preventDefault();
+
+  const datos = recolectarDatosRecepcion();
+  const faltantes = datos.observaciones.filter(
+    (o) => (o.estado === "amarillo" || o.estado === "rojo") && !o.archivo
+  );
+
+  if (faltantes.length) {
+    alert(
+      "Falta la foto de evidencia para: " +
+      faltantes.map((f) => f.elemento).join(", ")
+    );
+    return;
+  }
+
   const boton = document.getElementById("btn-guardar");
   boton.disabled = true;
   boton.textContent = "Guardando…";
 
   try {
-    const datos = recolectarDatosRecepcion();
     const respuesta = await API.guardarIngreso(datos);
 
     if (respuesta.ok) {
@@ -128,4 +181,7 @@ function limpiarFormulario() {
   document.getElementById("form-recepcion").reset();
   document.querySelectorAll(".foto-slot img.miniatura").forEach((img) => img.remove());
   document.querySelectorAll(".foto-slot span").forEach((span) => (span.style.display = ""));
+  document.querySelectorAll(".foto-slot-mini img.miniatura-mini").forEach((img) => img.remove());
+  document.querySelectorAll(".fila-semaforo__evidencia").forEach((div) => (div.hidden = true));
+  document.querySelectorAll(".texto-slot").forEach((span) => (span.textContent = "📷 Agregar foto de evidencia (obligatoria)"));
 }

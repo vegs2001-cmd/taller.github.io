@@ -13,7 +13,7 @@ const API = (() => {
 
   // URL de la Web App de Google Apps Script, termina en "/exec".
   // Ejemplo: "https://script.google.com/macros/s/AKfycb.../exec"
-  const BASE_URL = "https://script.google.com/macros/s/AKfycbxMRF-_fgmKVNlYmUs8-vqFcBaih8YlBiHPUlnus1Dk8XAhlwgxduNYADy1UbAWCDxOhQ/exec";
+  const BASE_URL = "https://script.google.com/macros/s/AKfycbxiggEf1dXoYSAiTFQGvZHNTji6TERe99Rs-efbtOzcJcRTtGNh9CDIRF5E41SjMSFDrQ/exec";
 
   /**
    * Envuelve las llamadas al backend.
@@ -68,6 +68,48 @@ const API = (() => {
     );
   }
 
+  /**
+   * Convierte el arreglo de observaciones { elemento, estado, archivo: File }
+   * en { elemento, estado, foto: { nombre, mimeType, base64 } } — solo cuando
+   * el semáforo está en amarillo/rojo y se adjuntó una foto de evidencia.
+   */
+  async function prepararObservaciones(observaciones = []) {
+    return Promise.all(
+      (observaciones || []).map(async (o) => {
+        if (!o.archivo) return { elemento: o.elemento, estado: o.estado };
+        return {
+          elemento: o.elemento,
+          estado: o.estado,
+          foto: {
+            nombre: o.archivo.name,
+            mimeType: o.archivo.type || "image/jpeg",
+            base64: await archivoABase64(o.archivo),
+          },
+        };
+      })
+    );
+  }
+
+  /**
+   * Convierte el arreglo de fallos { descripcion, fotos: [File,...] } en
+   * { descripcion, fotos: [{ nombre, mimeType, base64 }] } para el
+   * módulo de Trabajos.
+   */
+  async function prepararFallos(fallos = []) {
+    return Promise.all(
+      (fallos || []).map(async (f) => ({
+        descripcion: f.descripcion,
+        fotos: await Promise.all(
+          (f.fotos || []).map(async (archivo) => ({
+            nombre: archivo.name,
+            mimeType: archivo.type || "image/jpeg",
+            base64: await archivoABase64(archivo),
+          }))
+        ),
+      }))
+    );
+  }
+
   /** Respuestas simuladas mientras no exista backend real */
   function simular(accion, datos) {
     switch (accion) {
@@ -79,6 +121,10 @@ const API = (() => {
         return Promise.resolve({ ok: true, folio: datos.folio || "VH-2026-000001" });
       case "buscarExpediente":
         return Promise.resolve({ ok: false, mensaje: "Backend no conectado todavía." });
+      case "guardarTrabajos":
+        return Promise.resolve({ ok: true, folio: datos.folio, reparaciones: datos.reparaciones || [] });
+      case "autorizarReparaciones":
+        return Promise.resolve({ ok: true, folio: datos.folio, totalAutorizado: datos.totalAutorizado || 0 });
       case "listarExpedientes":
         return Promise.resolve({
           ok: true,
@@ -87,7 +133,7 @@ const API = (() => {
             "Control de calidad", "Listo para entrega", "Entregado",
           ],
           expedientes: [
-            { folio: "VH-2026-000001", cliente: "Cliente de prueba", vehiculo: "Nissan Versa 2022", placas: "ABC-123", estado: "En reparación", fechaIngreso: "2026-07-01 10:00" },
+            { folio: "VH-2026-000001", cliente: "Cliente de prueba", vehiculo: "Nissan Versa 2022", placas: "ABC-123", estado: "En reparación", fechaIngreso: "2026-07-01 10:00", totalEstimado: 2500, totalAutorizado: 0, reparacionesAutorizadas: [], bloqueado: false },
           ],
         });
       case "actualizarEstado":
@@ -105,15 +151,40 @@ const API = (() => {
 
     guardarIngreso: async (datos) => {
       const fotos = await prepararFotos(datos.fotos);
-      return llamar("guardarIngreso", { ...datos, fotos });
+      const observaciones = await prepararObservaciones(datos.observaciones);
+      return llamar("guardarIngreso", { ...datos, fotos, observaciones });
     },
 
     guardarSalida: async (datos) => {
       const fotos = await prepararFotos(datos.fotos);
-      return llamar("guardarSalida", { ...datos, fotos });
+      const observaciones = await prepararObservaciones(datos.observaciones);
+      return llamar("guardarSalida", { ...datos, fotos, observaciones });
     },
 
     buscarExpediente: (criterio) => llamar("buscarExpediente", { criterio }),
+
+    guardarTrabajos: async (datos) => {
+      const fallos = await prepararFallos(datos.fallos);
+      return llamar("guardarTrabajos", { ...datos, fallos });
+    },
+
+    autorizarReparaciones: async (datos) => {
+      const ineFrente = datos.ineFrente
+        ? { nombre: datos.ineFrente.name, mimeType: datos.ineFrente.type || "image/jpeg", base64: await archivoABase64(datos.ineFrente) }
+        : null;
+      const ineReverso = datos.ineReverso
+        ? { nombre: datos.ineReverso.name, mimeType: datos.ineReverso.type || "image/jpeg", base64: await archivoABase64(datos.ineReverso) }
+        : null;
+
+      return llamar("autorizarReparaciones", {
+        folio: datos.folio,
+        reparaciones: datos.reparaciones,
+        totalAutorizado: datos.totalAutorizado,
+        ineFrente,
+        ineReverso,
+      });
+    },
+
     verificarAdmin: (clave) => llamar("verificarAdmin", { clave }),
     listarExpedientes: (soloActivos = true, clave) => llamar("listarExpedientes", { soloActivos, clave }),
     actualizarEstado: (folio, estado, clave) => llamar("actualizarEstado", { folio, estado, clave }),

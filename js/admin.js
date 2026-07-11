@@ -149,6 +149,13 @@ function pintarTabla() {
   cuerpo.querySelectorAll(".btn-cambiar-estado").forEach((boton) => {
     boton.addEventListener("click", () => cambiarEstado(boton.dataset.folio));
   });
+
+  cuerpo.querySelectorAll(".btn-detalle-reparaciones").forEach((boton) => {
+    boton.addEventListener("click", () => {
+      const filaDetalle = cuerpo.querySelector(`[data-folio-detalle-fila="${boton.dataset.folioDetalle}"]`);
+      if (filaDetalle) filaDetalle.hidden = !filaDetalle.hidden;
+    });
+  });
 }
 
 function filaHTML(exp) {
@@ -171,6 +178,15 @@ function filaHTML(exp) {
         </span>
       </td>
       <td style="padding: 9px 6px;">
+        ${
+          exp.bloqueado
+            ? `<button type="button" class="btn-detalle-reparaciones" data-folio-detalle="${exp.folio}" style="background:none; border:none; padding:0; font-family: var(--fuente-dato); font-weight:600; color: var(--verde); cursor:pointer; text-decoration: underline;">
+                 $${Number(exp.totalAutorizado || 0).toFixed(2)}
+               </button>`
+            : `<span style="color: var(--peltre); font-size: 12.5px;">Sin autorizar</span>`
+        }
+      </td>
+      <td style="padding: 9px 6px;">
         <select class="select-estado" data-folio-select="${exp.folio}" style="font-size:13px; padding:6px 8px; border:1px solid var(--linea); border-radius: var(--radio); font-family: var(--fuente-cuerpo);">
           ${opciones}
         </select>
@@ -180,7 +196,48 @@ function filaHTML(exp) {
           Actualizar
         </button>
       </td>
+    </tr>
+    <tr class="fila-detalle-reparaciones" data-folio-detalle-fila="${exp.folio}" hidden>
+      <td colspan="8" style="padding: 0 6px 16px; background: var(--papel);">
+        ${filaDetalleReparacionesHTML(exp)}
+      </td>
     </tr>`;
+}
+
+function filaDetalleReparacionesHTML(exp) {
+  const reparaciones = exp.reparacionesAutorizadas || [];
+  const autorizadas = reparaciones.filter((r) => r.autorizada);
+  const rechazadas = reparaciones.filter((r) => !r.autorizada);
+
+  const filaReparacion = (r, autorizada) => `
+    <tr>
+      <td style="padding: 6px 8px; font-size: 13px;">
+        ${autorizada ? "✅" : "❌"} ${r.descripcion}
+      </td>
+      <td style="padding: 6px 8px; font-size: 13px; text-align:right; font-family: var(--fuente-dato);">
+        $${Number(r.costo || 0).toFixed(2)}
+      </td>
+    </tr>`;
+
+  return `
+    <div style="border: 1px solid var(--linea); border-radius: var(--radio); background: #fff; padding: 14px 16px; margin-top: 6px;">
+      <p style="font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--peltre); margin: 0 0 8px; font-weight: 600;">
+        Detalle de la autorización · ${exp.fechaAutorizacion || ""}
+      </p>
+      <table style="width: 100%; border-collapse: collapse;">
+        ${autorizadas.map((r) => filaReparacion(r, true)).join("")}
+        ${rechazadas.map((r) => filaReparacion(r, false)).join("")}
+      </table>
+      <div style="display:flex; justify-content:space-between; margin-top: 10px; padding-top: 8px; border-top: 1px solid var(--linea); font-weight: 600; font-size: 13.5px;">
+        <span>Total autorizado</span>
+        <span style="font-family: var(--fuente-dato);">$${Number(exp.totalAutorizado || 0).toFixed(2)}</span>
+      </div>
+      ${
+        exp.ineFrenteUrl
+          ? `<p style="margin: 10px 0 0;"><a href="${exp.ineFrenteUrl}" target="_blank" style="font-size: 12.5px;">Ver INE (frente)</a>${exp.ineReversoUrl ? ` · <a href="${exp.ineReversoUrl}" target="_blank" style="font-size: 12.5px;">Ver INE (reverso)</a>` : ""}</p>`
+          : ""
+      }
+    </div>`;
 }
 
 async function cambiarEstado(folio) {

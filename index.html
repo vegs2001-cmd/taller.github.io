@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Recepción de Vehículos</title>
+<title>Recepción de Vehículos · Servicio Integral V&amp;V</title>
 <link rel="stylesheet" href="css/estilos.css">
 </head>
 <body>
@@ -11,11 +11,13 @@
 
   <header class="encabezado">
     <div class="marca">
-      <p class="kicker">Servicio V&V · Control digital</p>
-      <h1>Recepción y Entrega de Vehículos</h1>
+      <p class="kicker">Sistema de recepción y entrega de vehículos</p>
+      <h1>Servicio Integral V&amp;V</h1>
     </div>
     <nav>
       <a href="index.html" aria-current="page">Recepción</a>
+      <a href="trabajos.html">Trabajos</a>
+      <a href="autorizacion.html">Autorización</a>
       <a href="salida.html">Orden de salida</a>
       <a href="consulta.html">Consultar expediente</a>
       <a href="admin.html">Administración</a>
@@ -165,10 +167,28 @@
         </div>
       </section>
 
-      <!-- Comentarios generales -->
+      <!-- Total estimado -->
       <section class="tarjeta">
         <div class="tarjeta__cabecera">
           <span class="tarjeta__num">05</span>
+          <h2>Total estimado</h2>
+        </div>
+        <div class="tarjeta__cuerpo grid-campos">
+          <div class="campo campo--dato">
+            <label for="total-estimado">Total estimado de reparación (MXN)</label>
+            <input type="number" id="total-estimado" name="total_estimado" min="0" step="0.01" placeholder="0.00">
+          </div>
+        </div>
+        <p class="texto-ayuda" style="padding: 0 22px 18px;">
+          Este monto es preliminar. El desglose final y las reparaciones que el cliente autorice
+          se definen en el módulo de <strong>Trabajos</strong> y en la página de <strong>Autorización</strong>.
+        </p>
+      </section>
+
+      <!-- Comentarios generales -->
+      <section class="tarjeta">
+        <div class="tarjeta__cabecera">
+          <span class="tarjeta__num">06</span>
           <h2>Comentarios generales</h2>
         </div>
         <div class="tarjeta__cuerpo">
@@ -188,7 +208,7 @@
   </main>
 
   <footer class="pie-pagina">
-   Servicio V&V · Registro digital de ingreso
+    Servicio Integral V&amp;V · Registro digital de ingreso
   </footer>
 
   <script src="js/api.js"></script>

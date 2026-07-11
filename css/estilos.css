@@ -1,0 +1,669 @@
+/* ============================================================
+   Sistema de Recepción y Entrega de Vehículos
+   Hoja de estilos base — tokens compartidos por todas las páginas
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap');
+
+:root {
+  /* Paleta — inspirada en el taller: asfalto, papel de orden de servicio,
+     ámbar de precaución y el semáforo de observaciones */
+  --asfalto:      #171B21;
+  --asfalto-2:    #232932;
+  --peltre:       #4B5563;
+  --peltre-claro: #8892A0;
+  --papel:        #EDEAE1;
+  --papel-tarj:   #F7F5F0;
+  --linea:        #D8D3C6;
+
+  --ambar:        #F2A93B;
+  --ambar-osc:    #C9821F;
+  --azul:         #2B4C7E;
+
+  --verde:        #3E8E4F;
+  --verde-bg:     #E5F1E6;
+  --amarillo:     #E0A526;
+  --amarillo-bg:  #FCF2DC;
+  --rojo:         #C0392B;
+  --rojo-bg:      #FBE7E4;
+
+  --fuente-display: 'Oswald', sans-serif;
+  --fuente-cuerpo:  'Inter', sans-serif;
+  --fuente-dato:    'IBM Plex Mono', monospace;
+
+  --radio: 3px;
+  --sombra: 0 1px 2px rgba(23, 27, 33, 0.06), 0 2px 8px rgba(23, 27, 33, 0.05);
+}
+
+* { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  margin: 0;
+  background: var(--papel);
+  color: var(--asfalto);
+  font-family: var(--fuente-cuerpo);
+  font-size: 15px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ---------- Franja de seguridad (elemento de marca) ----------
+   Rayas diagonales ámbar/asfalto, como la cinta de precaución de un taller.
+   Se usa una sola vez por página, en el borde superior. */
+.franja-seguridad {
+  height: 6px;
+  width: 100%;
+  background: repeating-linear-gradient(
+    -45deg,
+    var(--ambar) 0px, var(--ambar) 14px,
+    var(--asfalto) 14px, var(--asfalto) 28px
+  );
+}
+
+/* ---------- Encabezado ---------- */
+.encabezado {
+  background: var(--asfalto);
+  color: var(--papel);
+  padding: 22px 28px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 14px;
+}
+
+.encabezado .marca {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.encabezado .marca .kicker {
+  font-family: var(--fuente-dato);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ambar);
+}
+
+.encabezado .marca h1 {
+  margin: 0;
+  font-family: var(--fuente-display);
+  font-weight: 600;
+  font-size: 22px;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.encabezado nav {
+  display: flex;
+  gap: 4px;
+}
+
+.encabezado nav a {
+  color: var(--papel);
+  text-decoration: none;
+  font-family: var(--fuente-cuerpo);
+  font-weight: 500;
+  font-size: 13.5px;
+  padding: 8px 14px;
+  border-radius: var(--radio);
+  border: 1px solid transparent;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.encabezado nav a:hover,
+.encabezado nav a[aria-current="page"] {
+  border-color: rgba(242, 169, 59, 0.5);
+  background: rgba(242, 169, 59, 0.08);
+}
+
+/* ---------- Boleto de folio (elemento distintivo) ----------
+   Evoca el ticket de resguardo de un taller: número de folio en
+   mono, borde troquelado y una constancia de estado sellada. */
+.boleto-folio {
+  background: var(--papel-tarj);
+  border: 1px solid var(--linea);
+  border-radius: var(--radio);
+  box-shadow: var(--sombra);
+  padding: 18px 22px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  position: relative;
+  overflow: hidden;
+}
+
+.boleto-folio::before {
+  content: "";
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 5px;
+  background: repeating-linear-gradient(
+    to bottom, var(--ambar) 0 8px, transparent 8px 16px
+  );
+}
+
+.boleto-folio .etiqueta {
+  font-family: var(--fuente-dato);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--peltre);
+  margin: 0 0 4px;
+}
+
+.boleto-folio .folio {
+  font-family: var(--fuente-dato);
+  font-weight: 600;
+  font-size: 26px;
+  letter-spacing: 0.04em;
+  color: var(--asfalto);
+}
+
+.sello-estado {
+  font-family: var(--fuente-display);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 7px 14px;
+  border: 2px solid var(--ambar-osc);
+  color: var(--ambar-osc);
+  border-radius: var(--radio);
+  transform: rotate(-3deg);
+  white-space: nowrap;
+}
+
+/* ---------- Contenedor principal ---------- */
+main {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 28px 24px 64px;
+}
+
+/* ---------- Tarjetas de sección (hoja de inspección) ---------- */
+.tarjeta {
+  background: var(--papel-tarj);
+  border: 1px solid var(--linea);
+  border-radius: var(--radio);
+  box-shadow: var(--sombra);
+  margin-bottom: 20px;
+}
+
+.tarjeta__cabecera {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  padding: 16px 22px;
+  border-bottom: 1px solid var(--linea);
+}
+
+.tarjeta__num {
+  font-family: var(--fuente-dato);
+  font-size: 12px;
+  color: var(--ambar-osc);
+  font-weight: 600;
+}
+
+.tarjeta__cabecera h2 {
+  margin: 0;
+  font-family: var(--fuente-display);
+  font-weight: 600;
+  font-size: 16px;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--asfalto);
+}
+
+.tarjeta__cuerpo {
+  padding: 20px 22px 24px;
+}
+
+/* ---------- Formularios ---------- */
+.grid-campos {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+}
+
+.campo {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.campo label {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--peltre);
+}
+
+.campo input,
+.campo select,
+.campo textarea {
+  font-family: var(--fuente-cuerpo);
+  font-size: 14.5px;
+  padding: 9px 11px;
+  border: 1px solid var(--linea);
+  border-radius: var(--radio);
+  background: #fff;
+  color: var(--asfalto);
+}
+
+.campo input:focus,
+.campo select:focus,
+.campo textarea:focus {
+  outline: 2px solid var(--azul);
+  outline-offset: 1px;
+  border-color: var(--azul);
+}
+
+.campo--dato input {
+  font-family: var(--fuente-dato);
+  letter-spacing: 0.03em;
+}
+
+/* ---------- Evidencia fotográfica ---------- */
+.grid-fotos {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 14px;
+}
+
+.foto-slot {
+  border: 1.5px dashed var(--linea);
+  border-radius: var(--radio);
+  background: #fff;
+  aspect-ratio: 4 / 3;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  cursor: pointer;
+  color: var(--peltre);
+  transition: border-color 0.15s ease, color 0.15s ease;
+}
+
+.foto-slot:hover { border-color: var(--azul); color: var(--azul); }
+
+.foto-slot span.nombre {
+  font-size: 12.5px;
+  font-weight: 600;
+  text-align: center;
+  padding: 0 8px;
+}
+
+.foto-slot span.req {
+  font-family: var(--fuente-dato);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ambar-osc);
+}
+
+.foto-slot img.miniatura {
+  width: 100%; height: 100%;
+  object-fit: cover;
+  border-radius: var(--radio);
+}
+
+/* ---------- Semáforo de observaciones ---------- */
+.fila-semaforo {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 11px 4px;
+  border-bottom: 1px solid var(--linea);
+}
+.fila-semaforo:last-child { border-bottom: none; }
+
+.fila-semaforo__principal {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.fila-semaforo .nombre-item { font-weight: 500; font-size: 14px; }
+
+.fila-semaforo__evidencia {
+  background: var(--amarillo-bg);
+  border: 1px dashed var(--ambar-osc);
+  border-radius: var(--radio);
+  padding: 8px 10px;
+}
+
+.foto-slot-mini {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--ambar-osc);
+}
+
+.foto-slot-mini img.miniatura-mini {
+  width: 34px;
+  height: 34px;
+  object-fit: cover;
+  border-radius: 4px;
+  border: 1px solid var(--linea);
+}
+
+.semaforo {
+  display: flex;
+  gap: 6px;
+}
+
+.semaforo input { position: absolute; opacity: 0; pointer-events: none; }
+
+.semaforo label {
+  width: 26px; height: 26px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  cursor: pointer;
+  display: inline-block;
+  transition: transform 0.1s ease, border-color 0.15s ease;
+}
+
+.semaforo label.verde { background: var(--verde); }
+.semaforo label.amarillo { background: var(--amarillo); }
+.semaforo label.rojo { background: var(--rojo); }
+
+.semaforo input:checked + label {
+  border-color: var(--asfalto);
+  transform: scale(1.12);
+}
+
+/* ---------- Botones ---------- */
+.btn {
+  font-family: var(--fuente-cuerpo);
+  font-weight: 600;
+  font-size: 14px;
+  padding: 11px 20px;
+  border-radius: var(--radio);
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease, transform 0.05s ease;
+}
+
+.btn:active { transform: translateY(1px); }
+
+.btn-primario {
+  background: var(--asfalto);
+  color: var(--papel);
+}
+.btn-primario:hover { background: var(--asfalto-2); }
+
+.btn-secundario {
+  background: transparent;
+  color: var(--asfalto);
+  border-color: var(--peltre-claro);
+}
+.btn-secundario:hover { border-color: var(--asfalto); }
+
+.barra-acciones {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 6px;
+}
+
+/* ---------- Comparador antes / después ---------- */
+.comparador__marco {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  border-radius: var(--radio);
+  border: 1px solid var(--linea);
+  background: var(--asfalto);
+}
+
+.comparador__img-antes,
+.comparador__img-despues {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+  user-select: none;
+  pointer-events: none;
+}
+
+.comparador__img-antes { width: 100%; }
+
+.comparador__despues-wrap {
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 50%;
+  overflow: hidden;
+}
+
+.comparador__control {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  opacity: 0;
+  cursor: ew-resize;
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+}
+
+.comparador__manija {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 3px;
+  background: var(--ambar);
+  transform: translateX(-50%);
+  pointer-events: none;
+  box-shadow: 0 0 0 2px rgba(23, 27, 33, 0.2);
+}
+
+.comparador__manija::after {
+  content: "⇔";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 30px;
+  height: 30px;
+  background: var(--ambar);
+  color: var(--asfalto);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  font-weight: bold;
+}
+
+.comparador__etiquetas {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: var(--peltre);
+  margin-top: 6px;
+}
+
+/* ---------- Listas dinámicas (fallos, reparaciones) ---------- */
+.lista-dinamica-item {
+  border: 1px solid var(--linea);
+  border-radius: var(--radio);
+  background: #fff;
+  padding: 14px 16px;
+  margin-bottom: 12px;
+}
+
+.lista-dinamica-item__cabecera {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.btn-quitar {
+  background: none;
+  border: none;
+  color: var(--rojo);
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 4px 6px;
+}
+.btn-quitar:hover { text-decoration: underline; }
+
+.btn-agregar {
+  display: block;
+  width: 100%;
+  background: transparent;
+  border: 1.5px dashed var(--peltre-claro);
+  border-radius: var(--radio);
+  padding: 11px;
+  color: var(--peltre);
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+  transition: border-color 0.15s ease, color 0.15s ease;
+}
+.btn-agregar:hover { border-color: var(--azul); color: var(--azul); }
+
+.fila-reparacion {
+  display: grid;
+  grid-template-columns: 1fr 130px auto;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.fila-reparacion input {
+  font-family: var(--fuente-cuerpo);
+  font-size: 14px;
+  padding: 9px 11px;
+  border: 1px solid var(--linea);
+  border-radius: var(--radio);
+  background: #fff;
+  color: var(--asfalto);
+}
+
+.fila-reparacion input:focus {
+  outline: 2px solid var(--azul);
+  outline-offset: 1px;
+  border-color: var(--azul);
+}
+
+.fila-reparacion .reparacion-costo { font-family: var(--fuente-dato); }
+
+@media (max-width: 560px) {
+  .fila-reparacion { grid-template-columns: 1fr; }
+}
+
+/* ---------- Autorización del cliente ---------- */
+.tabla-autorizacion {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.tabla-autorizacion th {
+  text-align: left;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--peltre);
+  padding: 8px 6px;
+  border-bottom: 2px solid var(--linea);
+}
+
+.tabla-autorizacion td {
+  padding: 12px 6px;
+  border-bottom: 1px solid var(--linea);
+  vertical-align: middle;
+}
+
+.tabla-autorizacion .col-costo {
+  text-align: right;
+  font-family: var(--fuente-dato);
+  white-space: nowrap;
+}
+
+.tabla-autorizacion input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+  accent-color: var(--verde);
+  cursor: pointer;
+}
+
+.total-autorizacion {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 16px 6px 4px;
+  margin-top: 4px;
+  border-top: 2px solid var(--asfalto);
+  font-family: var(--fuente-display);
+  font-size: 19px;
+  font-weight: 600;
+}
+
+.total-autorizacion .monto { font-family: var(--fuente-dato); }
+
+.banner-bloqueado {
+  background: var(--rojo-bg);
+  border: 1px solid var(--rojo);
+  color: #7a231a;
+  border-radius: var(--radio);
+  padding: 14px 16px;
+  font-size: 13.5px;
+  font-weight: 500;
+  margin-bottom: 20px;
+}
+
+.banner-info {
+  background: var(--verde-bg);
+  border: 1px solid var(--verde);
+  color: #235c30;
+  border-radius: var(--radio);
+  padding: 14px 16px;
+  font-size: 13.5px;
+  font-weight: 500;
+  margin-bottom: 20px;
+}
+
+/* ---------- Utilidades ---------- */
+.texto-ayuda {
+  font-size: 12.5px;
+  color: var(--peltre);
+  margin: 6px 0 0;
+}
+
+.pie-pagina {
+  text-align: center;
+  padding: 26px;
+  color: var(--peltre);
+  font-size: 12.5px;
+}
+
+@media (max-width: 640px) {
+  .encabezado { flex-direction: column; align-items: flex-start; }
+  .boleto-folio { flex-direction: column; align-items: flex-start; }
+}
+
+/* Respeta preferencia de movimiento reducido */
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; scroll-behavior: auto !important; }
+}

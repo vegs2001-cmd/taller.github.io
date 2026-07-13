@@ -1,14 +1,16 @@
 /* ============================================================
    autorizacion.js
    Lógica de la página de Autorización (autorizacion.html): el
-   cliente elige qué reparaciones recomendadas autoriza, ve el
-   total, adjunta su INE y confirma. Una vez confirmado, el
-   expediente queda bloqueado y esta misma página muestra la
-   vista de solo lectura.
+   cliente elige qué reparaciones recomendadas autoriza (además del
+   precio base del servicio, que no es rechazable), ve el total,
+   adjunta su INE y confirma. Una vez confirmado, el expediente
+   queda bloqueado y esta misma página muestra la vista de solo
+   lectura.
    ============================================================ */
 
 let folioActualAutorizacion = null;
 let reparacionesDisponibles = [];
+let precioBaseAutorizacion = 0;
 
 document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("btn-buscar-folio-autorizacion").addEventListener("click", buscarFolioAutorizacion);
@@ -52,9 +54,11 @@ async function buscarFolioAutorizacion() {
     document.getElementById("vista-bloqueada").hidden = true;
     document.getElementById("form-autorizacion").hidden = true;
 
+    const hayAlgoQueAutorizar = (exp.reparaciones && exp.reparaciones.length) || Number(exp.totalEstimado) > 0;
+
     if (exp.bloqueado) {
       mostrarVistaBloqueada(exp);
-    } else if (!exp.reparaciones || !exp.reparaciones.length) {
+    } else if (!hayAlgoQueAutorizar) {
       document.getElementById("mensaje-sin-reparaciones").hidden = false;
     } else {
       mostrarFormularioAutorizacion(exp);
@@ -70,33 +74,37 @@ function mostrarVistaBloqueada(exp) {
   document.getElementById("fecha-autorizacion").textContent = exp.fechaAutorizacion || "—";
 
   const autorizadas = (exp.reparacionesAutorizadas || []).filter((r) => r.autorizada);
-  document.getElementById("cuerpo-tabla-bloqueada").innerHTML = autorizadas.length
-    ? autorizadas
-        .map(
-          (r) => `<tr><td>${r.descripcion}</td><td class="col-costo">${formatoMoneda(r.costo)}</td></tr>`
-        )
-        .join("")
-    : `<tr><td colspan="2" style="color:var(--peltre);">No se autorizó ninguna reparación adicional.</td></tr>`;
 
+  const filaBase = `<tr><td>Servicio base (no rechazable)</td><td class="col-costo">${formatoMoneda(exp.totalEstimado)}</td></tr>`;
+  const filasReparaciones = autorizadas
+    .map((r) => `<tr><td>${r.descripcion}</td><td class="col-costo">${formatoMoneda(r.costo)}</td></tr>`)
+    .join("");
+
+  document.getElementById("cuerpo-tabla-bloqueada").innerHTML = filaBase + filasReparaciones;
   document.getElementById("total-bloqueado").textContent = formatoMoneda(exp.totalAutorizado);
 }
 
 function mostrarFormularioAutorizacion(exp) {
   reparacionesDisponibles = exp.reparaciones || [];
+  precioBaseAutorizacion = Number(exp.totalEstimado) || 0;
+
   document.getElementById("form-autorizacion").hidden = false;
   document.getElementById("form-autorizacion").reset();
+  document.getElementById("precio-base-autorizacion").textContent = formatoMoneda(precioBaseAutorizacion);
 
   const cuerpo = document.getElementById("cuerpo-tabla-autorizacion");
-  cuerpo.innerHTML = reparacionesDisponibles
-    .map(
-      (r) => `
+  cuerpo.innerHTML = reparacionesDisponibles.length
+    ? reparacionesDisponibles
+        .map(
+          (r) => `
     <tr>
       <td><input type="checkbox" class="chk-reparacion" data-id="${r.id}" data-costo="${r.costo}"></td>
       <td>${r.descripcion}</td>
       <td class="col-costo">${formatoMoneda(r.costo)}</td>
     </tr>`
-    )
-    .join("");
+        )
+        .join("")
+    : `<tr><td colspan="3" style="color:var(--peltre); font-size: 13px;">El taller no registró reparaciones adicionales recomendadas.</td></tr>`;
 
   cuerpo.querySelectorAll(".chk-reparacion").forEach((chk) => chk.addEventListener("change", recalcularTotalAutorizado));
   recalcularTotalAutorizado();
@@ -107,11 +115,11 @@ function mostrarFormularioAutorizacion(exp) {
 }
 
 function recalcularTotalAutorizado() {
-  const total = Array.from(document.querySelectorAll(".chk-reparacion:checked")).reduce(
+  const totalReparaciones = Array.from(document.querySelectorAll(".chk-reparacion:checked")).reduce(
     (suma, chk) => suma + (parseFloat(chk.dataset.costo) || 0),
     0
   );
-  document.getElementById("total-autorizado").textContent = formatoMoneda(total);
+  document.getElementById("total-autorizado").textContent = formatoMoneda(precioBaseAutorizacion + totalReparaciones);
 }
 
 function activarSlotFotoIne(nombreSlot) {
@@ -149,12 +157,19 @@ async function confirmarAutorizacion(evento) {
     autorizada: chk.checked,
   }));
 
-  const totalAutorizado = Array.from(document.querySelectorAll(".chk-reparacion:checked")).reduce(
+  const totalReparaciones = Array.from(document.querySelectorAll(".chk-reparacion:checked")).reduce(
     (suma, chk) => suma + (parseFloat(chk.dataset.costo) || 0),
     0
   );
+  const totalAutorizado = precioBaseAutorizacion + totalReparaciones;
 
-  if (!confirm(`¿Confirmas la autorización por un total de ${formatoMoneda(totalAutorizado)}? Ya no podrás modificarla después.`)) {
+  if (
+    !confirm(
+      `¿Confirmas la autorización por un total de ${formatoMoneda(totalAutorizado)} ` +
+      `(incluye el servicio base de ${formatoMoneda(precioBaseAutorizacion)}, no rechazable)? ` +
+      `Ya no podrás modificarla después.`
+    )
+  ) {
     return;
   }
 

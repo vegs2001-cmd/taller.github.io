@@ -13,6 +13,7 @@
 const COLOR_ESTADO = {
   "Recibido": "var(--azul)",
   "En diagnóstico": "var(--amarillo)",
+  "Pendiente de actualización": "var(--ambar-osc)",
   "En reparación": "var(--ambar-osc)",
   "Pendiente de refacciones": "var(--rojo)",
   "Control de calidad": "var(--azul)",
@@ -31,6 +32,7 @@ document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("btn-cerrar-sesion").addEventListener("click", cerrarSesion);
   document.getElementById("chk-mostrar-entregados").addEventListener("change", cargarExpedientes);
   document.getElementById("filtro-admin").addEventListener("input", pintarTabla);
+  document.getElementById("btn-probar-correo").addEventListener("click", probarCorreo);
 
   const claveGuardada = sessionStorage.getItem(CLAVE_STORAGE_KEY);
   if (claveGuardada) {
@@ -180,8 +182,8 @@ function filaHTML(exp) {
       <td style="padding: 9px 6px;">
         ${
           exp.bloqueado
-            ? `<button type="button" class="btn-detalle-reparaciones" data-folio-detalle="${exp.folio}" style="background:none; border:none; padding:0; font-family: var(--fuente-dato); font-weight:600; color: var(--verde); cursor:pointer; text-decoration: underline;">
-                 $${Number(exp.totalAutorizado || 0).toFixed(2)}
+            ? `<button type="button" class="btn-detalle-reparaciones" data-folio-detalle="${exp.folio}" style="background:none; border:none; padding:0; font-family: var(--fuente-dato); font-weight:600; color: var(--verde); cursor:pointer; text-decoration: underline;" title="Ver reparaciones autorizadas e INE">
+                 $${Number(exp.totalAutorizado || 0).toFixed(2)} ▾
                </button>`
             : `<span style="color: var(--peltre); font-size: 12.5px;">Sin autorizar</span>`
         }
@@ -225,6 +227,12 @@ function filaDetalleReparacionesHTML(exp) {
         Detalle de la autorización · ${exp.fechaAutorizacion || ""}
       </p>
       <table style="width: 100%; border-collapse: collapse;">
+        <tr>
+          <td style="padding: 6px 8px; font-size: 13px;">💵 Servicio base (no rechazable)</td>
+          <td style="padding: 6px 8px; font-size: 13px; text-align:right; font-family: var(--fuente-dato);">
+            $${Number(exp.totalEstimado || 0).toFixed(2)}
+          </td>
+        </tr>
         ${autorizadas.map((r) => filaReparacion(r, true)).join("")}
         ${rechazadas.map((r) => filaReparacion(r, false)).join("")}
       </table>
@@ -234,10 +242,56 @@ function filaDetalleReparacionesHTML(exp) {
       </div>
       ${
         exp.ineFrenteUrl
-          ? `<p style="margin: 10px 0 0;"><a href="${exp.ineFrenteUrl}" target="_blank" style="font-size: 12.5px;">Ver INE (frente)</a>${exp.ineReversoUrl ? ` · <a href="${exp.ineReversoUrl}" target="_blank" style="font-size: 12.5px;">Ver INE (reverso)</a>` : ""}</p>`
-          : ""
+          ? `
+        <div style="margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--linea);">
+          <p style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--peltre); margin: 0 0 8px; font-weight: 600;">
+            INE de quien autorizó
+          </p>
+          <div style="display:flex; gap:12px; flex-wrap:wrap;">
+            <a href="${exp.ineFrenteUrl}" target="_blank" title="Ver frente en tamaño completo">
+              <img src="${exp.ineFrenteUrl}" alt="INE frente" style="width:170px; max-width:100%; border-radius:4px; border:1px solid var(--linea); display:block;">
+              <span style="display:block; text-align:center; font-size:11px; color:var(--peltre); margin-top:4px;">Frente</span>
+            </a>
+            ${
+              exp.ineReversoUrl
+                ? `<a href="${exp.ineReversoUrl}" target="_blank" title="Ver reverso en tamaño completo">
+                     <img src="${exp.ineReversoUrl}" alt="INE reverso" style="width:170px; max-width:100%; border-radius:4px; border:1px solid var(--linea); display:block;">
+                     <span style="display:block; text-align:center; font-size:11px; color:var(--peltre); margin-top:4px;">Reverso</span>
+                   </a>`
+                : ""
+            }
+          </div>
+        </div>`
+          : `<p style="margin: 10px 0 0; font-size: 12px; color: var(--peltre);">No hay INE registrado para este folio.</p>`
       }
     </div>`;
+}
+
+async function probarCorreo() {
+  const correo = document.getElementById("correo-prueba").value.trim();
+  if (!correo) {
+    alert("Escribe un correo de destino.");
+    return;
+  }
+
+  const boton = document.getElementById("btn-probar-correo");
+  boton.disabled = true;
+  boton.textContent = "Enviando…";
+
+  try {
+    const respuesta = await API.probarEnvioCorreo(correo, claveAdmin);
+    if (respuesta.requiereClave) {
+      manejarAccesoInvalido_();
+      return;
+    }
+    alert(respuesta.mensaje || (respuesta.ok ? "Correo enviado." : "No se pudo enviar el correo."));
+  } catch (err) {
+    console.error(err);
+    alert("Ocurrió un error al enviar el correo de prueba.");
+  } finally {
+    boton.disabled = false;
+    boton.textContent = "Enviar correo de prueba";
+  }
 }
 
 async function cambiarEstado(folio) {
@@ -267,6 +321,10 @@ async function cambiarEstado(folio) {
         expedientesActuales = expedientesActuales.filter((e) => e.folio !== folio);
       }
       pintarTabla();
+
+      if (respuesta.correoEnviado === false) {
+        console.warn("No se notificó por correo:", respuesta.correoError);
+      }
     } else {
       alert(respuesta.mensaje || "No se pudo actualizar el estado.");
       boton.disabled = false;

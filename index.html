@@ -162,8 +162,15 @@
           <span class="tarjeta__num">04</span>
           <h2>Observaciones · Semáforo</h2>
         </div>
-        <div class="tarjeta__cuerpo" id="lista-observaciones">
-          <!-- Filas generadas por js/app.js -->
+        <div class="tarjeta__cuerpo">
+          <div class="leyenda-semaforo">
+            <span class="leyenda-semaforo__item"><span class="punto verde"></span> Verde — Recomendable</span>
+            <span class="leyenda-semaforo__item"><span class="punto amarillo"></span> Amarillo — Precaución (requiere foto)</span>
+            <span class="leyenda-semaforo__item"><span class="punto rojo"></span> Rojo — Atención inmediata (requiere foto)</span>
+          </div>
+          <div id="lista-observaciones">
+            <!-- Filas generadas por js/app.js -->
+          </div>
         </div>
       </section>
 
@@ -176,12 +183,14 @@
         <div class="tarjeta__cuerpo grid-campos">
           <div class="campo campo--dato">
             <label for="total-estimado">Total estimado de reparación (MXN)</label>
-            <input type="number" id="total-estimado" name="total_estimado" min="0" step="0.01" placeholder="0.00">
+            <input type="number" id="total-estimado" name="total_estimado" min="0.01" step="0.01" placeholder="0.00" required>
           </div>
         </div>
         <p class="texto-ayuda" style="padding: 0 22px 18px;">
-          Este monto es preliminar. El desglose final y las reparaciones que el cliente autorice
-          se definen en el módulo de <strong>Trabajos</strong> y en la página de <strong>Autorización</strong>.
+          Este monto se convierte en el <strong>precio base del servicio</strong>: aparece en el
+          PDF de ingreso y, en la autorización que firma el cliente, se cobra siempre —
+          no es rechazable. El desglose final de reparaciones adicionales se define en el
+          módulo de <strong>Trabajos</strong> y en la página de <strong>Autorización</strong>.
         </p>
       </section>
 

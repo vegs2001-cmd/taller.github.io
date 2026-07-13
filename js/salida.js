@@ -129,30 +129,34 @@ function formatoMonedaSalida(valor) {
 /** Muestra, de solo lectura, los trabajos realizados y las reparaciones que autorizó el cliente */
 function pintarDesglose(exp) {
   const autorizadas = (exp.reparacionesAutorizadas || []).filter((r) => r.autorizada);
+  const base = Number(exp.totalEstimado || 0);
 
-  const filasReparaciones = autorizadas.length
-    ? autorizadas
-        .map(
-          (r) => `
+  const filaBase = `
+    <tr style="border-bottom:1px solid var(--linea);">
+      <td style="padding:8px 6px;">Servicio base (no rechazable)</td>
+      <td style="padding:8px 6px; text-align:right; font-family:var(--fuente-dato);">${formatoMonedaSalida(base)}</td>
+    </tr>`;
+
+  const filasReparaciones = autorizadas
+    .map(
+      (r) => `
       <tr style="border-bottom:1px solid var(--linea);">
         <td style="padding:8px 6px;">${r.descripcion}</td>
         <td style="padding:8px 6px; text-align:right; font-family:var(--fuente-dato);">${formatoMonedaSalida(r.costo)}</td>
       </tr>`
-        )
-        .join("")
-    : `<tr><td colspan="2" style="padding:8px 6px; color:var(--peltre);">El cliente no autorizó reparaciones adicionales.</td></tr>`;
+    )
+    .join("");
 
   document.getElementById("contenido-desglose").innerHTML = `
     <p style="font-size:12.5px; color:var(--peltre); text-transform:uppercase; letter-spacing:0.05em; margin:0 0 6px;">Trabajos realizados</p>
     <p style="font-size:14px; margin:0 0 18px;">${exp.trabajosRealizados ? exp.trabajosRealizados : "— No se registraron trabajos —"}</p>
 
-    <p style="font-size:12.5px; color:var(--peltre); text-transform:uppercase; letter-spacing:0.05em; margin:0 0 6px;">Reparaciones autorizadas</p>
-    <table style="width:100%; border-collapse:collapse; font-size:13.5px; margin-bottom: 14px;">${filasReparaciones}</table>
+    <p style="font-size:12.5px; color:var(--peltre); text-transform:uppercase; letter-spacing:0.05em; margin:0 0 6px;">Desglose de cargos</p>
+    <table style="width:100%; border-collapse:collapse; font-size:13.5px; margin-bottom: 14px;">${filaBase}${filasReparaciones}</table>
 
     <div style="display:flex; justify-content:space-between; padding-top:10px; border-top:2px solid var(--asfalto); font-family:var(--fuente-display); font-weight:600; font-size:16px;">
       <span>Total autorizado</span><span style="font-family:var(--fuente-dato);">${formatoMonedaSalida(exp.totalAutorizado)}</span>
     </div>
-    <p class="texto-ayuda" style="margin-top:6px;">Total estimado en recepción: ${formatoMonedaSalida(exp.totalEstimado)}</p>
   `;
 
   document.getElementById("tarjeta-desglose").hidden = false;
@@ -203,7 +207,11 @@ async function guardarSalida(evento) {
     if (respuesta.ok) {
       document.getElementById("sello-estado-salida").textContent = "Entregado";
       const mensajePdf = respuesta.pdf ? `\n\nPDF de salida: ${respuesta.pdf}` : "";
-      alert(`Orden de salida guardada para el folio ${respuesta.folio}.${mensajePdf}`);
+      const mensajeCorreo =
+        respuesta.correoEnviado === false
+          ? `\n\n⚠️ No se pudo notificar al cliente por correo: ${respuesta.correoError || "revisa admin.html → Prueba de notificaciones"}.`
+          : "";
+      alert(`Orden de salida guardada para el folio ${respuesta.folio}.${mensajePdf}${mensajeCorreo}`);
     } else {
       alert(respuesta.mensaje || "No se pudo guardar la orden de salida.");
     }

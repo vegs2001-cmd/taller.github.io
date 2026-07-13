@@ -90,6 +90,15 @@
             <p class="texto-ayuda" style="margin: 0 0 14px;">
               Selecciona las reparaciones que autorizas. El total se calcula automáticamente.
             </p>
+
+            <div style="display:flex; justify-content:space-between; align-items:center; background: var(--papel); border:1px solid var(--linea); border-radius: var(--radio); padding: 12px 16px; margin-bottom: 16px;">
+              <div>
+                <p style="margin:0; font-weight:600; font-size:14px;">Servicio base</p>
+                <p style="margin:2px 0 0; font-size:12px; color:var(--peltre);">Cargo fijo del servicio, no rechazable</p>
+              </div>
+              <span id="precio-base-autorizacion" style="font-family: var(--fuente-dato); font-weight:600; font-size:16px;">$0.00</span>
+            </div>
+
             <table class="tabla-autorizacion">
               <thead>
                 <tr><th style="width:40px;"></th><th>Reparación</th><th class="col-costo">Costo</th></tr>

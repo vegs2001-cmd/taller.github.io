@@ -163,7 +163,11 @@ async function guardarRecepcion(evento) {
       document.getElementById("folio-preview").textContent = respuesta.folio;
       document.getElementById("sello-estado").textContent = "Recibido";
       const mensajePdf = respuesta.pdf ? `\n\nPDF de ingreso: ${respuesta.pdf}` : "";
-      alert(`Vehículo registrado con folio ${respuesta.folio}.${mensajePdf}`);
+      const mensajeCorreo =
+        respuesta.correoEnviado === false
+          ? `\n\n⚠️ No se pudo notificar al cliente por correo: ${respuesta.correoError || "revisa admin.html → Prueba de notificaciones"}.`
+          : "";
+      alert(`Vehículo registrado con folio ${respuesta.folio}.${mensajePdf}${mensajeCorreo}`);
     } else {
       alert(respuesta.mensaje || "No se pudo guardar el registro.");
     }

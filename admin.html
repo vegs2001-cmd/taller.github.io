@@ -96,6 +96,33 @@
       Al cambiar el estado se envía automáticamente un correo al cliente (si dejó su correo al ingresar el vehículo).
     </p>
 
+    <section class="tarjeta">
+      <div class="tarjeta__cabecera">
+        <span class="tarjeta__num">·</span>
+        <h2>Prueba de notificaciones por correo</h2>
+      </div>
+      <div class="tarjeta__cuerpo">
+        <p class="texto-ayuda" style="margin: 0 0 14px;">
+          Si los clientes no están recibiendo las notificaciones o los PDF, usa esto para
+          probar el envío directamente, sin depender de un folio real.
+        </p>
+        <div class="grid-campos" style="align-items: end;">
+          <div class="campo">
+            <label for="correo-prueba">Correo de destino</label>
+            <input type="email" id="correo-prueba" placeholder="tu-correo@ejemplo.com">
+          </div>
+          <div class="campo">
+            <button type="button" class="btn btn-secundario" id="btn-probar-correo">Enviar correo de prueba</button>
+          </div>
+        </div>
+        <p class="texto-ayuda" style="margin-top: 10px;">
+          Si no llega en unos minutos, revisa la carpeta de spam y confirma que le diste
+          permiso al script para enviar correos (Apps Script te lo pide la primera vez que
+          se ejecuta cualquier acción que use MailApp).
+        </p>
+      </div>
+    </section>
+
     </div>
 
   </main>

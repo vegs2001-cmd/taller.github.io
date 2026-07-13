@@ -13,7 +13,7 @@ const API = (() => {
 
   // URL de la Web App de Google Apps Script, termina en "/exec".
   // Ejemplo: "https://script.google.com/macros/s/AKfycb.../exec"
-  const BASE_URL = "https://script.google.com/macros/s/AKfycbxiggEf1dXoYSAiTFQGvZHNTji6TERe99Rs-efbtOzcJcRTtGNh9CDIRF5E41SjMSFDrQ/exec";
+  const BASE_URL = "https://script.google.com/macros/s/AKfycbxuJvcQJLvys4PckexckMhApxGNDrDd0jRJ7m_6G7ywzrrEFwnmpwUvU1rgwCLtHhmGrg/exec";
 
   /**
    * Envuelve las llamadas al backend.
@@ -129,7 +129,7 @@ const API = (() => {
         return Promise.resolve({
           ok: true,
           estados: [
-            "Recibido", "En diagnóstico", "En reparación", "Pendiente de refacciones",
+            "Recibido", "En diagnóstico", "Pendiente de actualización", "En reparación", "Pendiente de refacciones",
             "Control de calidad", "Listo para entrega", "Entregado",
           ],
           expedientes: [
@@ -138,6 +138,8 @@ const API = (() => {
         });
       case "actualizarEstado":
         return Promise.resolve({ ok: true, folio: datos.folio, estado: datos.estado });
+      case "probarEnvioCorreo":
+        return Promise.resolve({ ok: true, mensaje: `[Simulado] Se habría enviado un correo de prueba a ${datos.correo}.` });
       case "verificarAdmin":
         console.warn("[API stub] backend no conectado: se acepta cualquier clave no vacía para poder probar admin.html.");
         return Promise.resolve({ ok: Boolean(datos.clave) });
@@ -188,6 +190,7 @@ const API = (() => {
     verificarAdmin: (clave) => llamar("verificarAdmin", { clave }),
     listarExpedientes: (soloActivos = true, clave) => llamar("listarExpedientes", { soloActivos, clave }),
     actualizarEstado: (folio, estado, clave) => llamar("actualizarEstado", { folio, estado, clave }),
+    probarEnvioCorreo: (correo, clave) => llamar("probarEnvioCorreo", { correo, clave }),
   };
 
 })();

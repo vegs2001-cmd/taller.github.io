@@ -14,21 +14,38 @@ desplegarse en GitHub Pages, conectada a un backend en Google Apps Script.
 ✅ `autorizacion.html` — El cliente ve las reparaciones recomendadas con su
    costo, elige cuáles autoriza (el total se calcula solo), adjunta la foto
    de su INE y confirma; a partir de ahí el expediente queda **bloqueado**
-   y no se puede modificar
+   y no se puede modificar. Su navegación **no da acceso al resto del
+   sistema** (solo enlaza con `consulta.html`)
 ✅ `salida.html` — Orden de salida (búsqueda de expediente, fotos finales,
    semáforo, kilometraje/gasolina final) + **desglose de trabajos y
    reparaciones autorizadas** de solo lectura
 ✅ `consulta.html` — Consulta pública de expediente por folio/placas/VIN,
    con **comparador antes/después** (slider) por cada foto que tenga
-   versión de ingreso y de salida
+   versión de ingreso y de salida. Igual que `autorizacion.html`, su
+   navegación es cerrada: no expone enlaces a las páginas internas del
+   taller (recepción, trabajos, salida, administración)
 ✅ `admin.html` — Panel de administración **con acceso por contraseña**:
    lista de vehículos en el taller, cambio de estado con notificación por
-   correo, y detalle expandible de las reparaciones que autorizó cada
-   cliente (con enlace a su INE)
+   correo, y detalle expandible con las reparaciones que autorizó cada
+   cliente **y la foto de su INE mostrada directamente** (no solo un
+   enlace)
 ✅ **Evidencia fotográfica obligatoria en el semáforo**: al marcar
    amarillo o rojo en cualquier observación (ingreso o salida), el sistema
    pide una foto antes de dejar guardar; se sube a Drive y aparece en el
    PDF junto a esa observación
+✅ **Leyenda del semáforo** en las secciones de observaciones (ingreso y
+   salida) y en el PDF, para que se entienda de un vistazo qué significa
+   cada color
+✅ **Precio base no rechazable**: el "Total estimado" de recepción aparece
+   en el PDF de ingreso y, en la autorización del cliente, se suma siempre
+   al total (no se puede desmarcar)
+✅ **Correos con PDF adjunto** en cada notificación de ingreso/salida, más
+   una herramienta de "Prueba de notificaciones por correo" en
+   `admin.html` para diagnosticar si algo no está llegando
+✅ **Estado "Pendiente de actualización"**: al moverlo desde `admin.html`,
+   el correo automático invita al cliente, con un botón directo, a entrar
+   a `autorizacion.html` con su folio para revisar y autorizar las
+   reparaciones recomendadas
 ✅ `css/estilos.css` — Sistema de diseño compartido
 ✅ `js/api.js` — Interfaz hacia el backend (se simula sola mientras `BASE_URL`
    esté vacío; en cuanto lo despliegues, empieza a usarlo de verdad)
@@ -47,7 +64,9 @@ desplegarse en GitHub Pages, conectada a un backend en Google Apps Script.
    fotos y observaciones, y se anota un **total estimado** preliminar.
 2. **Trabajos** (`trabajos.html`) — el taller busca el folio y registra los
    trabajos realizados, los fallos encontrados (con fotos) y una lista de
-   reparaciones recomendadas con su costo.
+   reparaciones recomendadas con su costo. Luego, en `admin.html`, se
+   cambia el estado a **"Pendiente de actualización"**: esto le manda un
+   correo al cliente con un botón directo a `autorizacion.html?folio=...`.
 3. **Autorización** (`autorizacion.html`) — el cliente busca el mismo folio,
    ve la lista de reparaciones con su costo, marca las que autoriza, ve el
    total, adjunta su INE y confirma. **A partir de aquí el expediente queda
